@@ -1,0 +1,62 @@
+---
+title: "Lab 4 Challenge"
+author: "Caleb Jensen"
+format: html
+editor: visual
+---
+
+# Challenge
+
+```{r}
+#| output: FALSE
+library(readxl)
+library(tidyverse)
+library(here)
+avocados <- read_csv(here("supporting_artifacts", "Lab 4", "avocado.csv"))
+homes <- read_xls(here("supporting_artifacts", "Lab 4", "Median_CA_home_prices.xls"), 
+                  sheet = "Median Price",
+                      skip = 7, 
+                      n_max = 400)
+```
+
+```{r}
+#| output: FALSE
+homes_cleaned <- homes |> 
+  select(`San Francisco`, `San Diego`, `Los Angeles`, Sacramento, `Mon-Yr`) |> 
+  separate(col = `Mon-Yr`, 
+           into = c("Year", "Month", "Day"), 
+           sep = "-") |> 
+  mutate(year = as.numeric(Year)) |> 
+  filter(year >= 2015, 
+         year <= 2018) |> 
+  pivot_longer(cols = c(`San Francisco`, `San Diego`, Sacramento, `Los Angeles`), 
+               names_to = "region", 
+               values_to = "price") |> 
+  group_by(year, region) |>
+  summarise(price = mean(price),
+            .groups = "keep")
+```
+
+```{r}
+ca_cities <- data.frame(region = c("LosAngeles", "SanFrancisco", "SanDiego",
+                                   "Sacramento"))
+
+avocados |> 
+  semi_join(ca_cities, by = "region") |> 
+  mutate(region = case_when(region == "SanFrancisco" ~ "San Francisco", 
+                            region == "SanDiego" ~ "San Diego",
+                            region == "LosAngeles" ~"Los Angeles",
+                            region == "Sacramento" ~ "Sacramento")) |> 
+  group_by(year, region) |> 
+  summarise(avg_avocado_price = mean(AveragePrice), 
+            .groups = "keep") |> 
+  left_join(homes_cleaned, 
+            by = c("region" = "region", "year" = "year")) |> 
+  ggplot() +
+  geom_point(mapping = aes(x = avg_avocado_price, y = price, color = region)) +
+  labs(title = "Average Avocado Price vs. Mean Home Price", x = "", y = "", 
+       color = "City") + 
+  theme(plot.title = element_text(hjust = .5))
+```
+
+It appears that there is some relationship between avocado price and home price. If we look at groups by city, as avocado prices in a city increase so do their home prices. However, the data deserves further investigation and the answer is somewhat convoluted. For instance, San Francisco has famously astronomical home prices which is shown in the data, at the same time they have avocado prices only slightly higher than Sacramento which has the lowest home prices by a significant margin. All that to say while there may be a relationship between avocado prices and home prices it is merely a correlation, not a causation.

@@ -1,0 +1,46 @@
+---
+title: "Practice Activity 5.2"
+format: html
+editor: visual
+author: "Caleb Jensen"
+---
+
+```{r}
+library(tidyverse)
+library(stringr)
+message <- read_csv("https://www.dropbox.com/s/lgpn3vmksk3ssdo/scrambled_message.txt?dl=1") %>% 
+  pull(Word)
+  
+```
+
+```{r}
+sum(str_length(message))
+
+sum(str_detect(message, pattern = "."))
+
+str_subset(message, "^m")
+
+str_subset(message, pattern = "z$")
+
+str_extract(message, pattern = "[:punct:]")
+
+message[str_length(message) == max(str_length(message))]
+```
+
+```{r}
+message_trim <- str_trim(message, side = "both")
+
+message_cut <- str_sub(message_trim, start = 1L, end = 16L)
+
+message_remove <- str_remove_all(message_cut, pattern = "ugh+[:punct:]")
+
+message_replaced <- str_replace_all(message_remove, pattern = "a{2}", "ee")
+
+message_nozs <- str_replace_all(message_replaced, pattern = "z", "t")
+
+message_ayyy <- str_replace_all(message_nozs, pattern = "b$", "y")
+
+message_kayyy <- str_replace_all(message_ayyy, pattern = "^k|^K", "v")
+
+message_final <- str_c(message_kayyy, collapse = " ")
+```

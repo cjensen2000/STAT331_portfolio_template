@@ -1,0 +1,42 @@
+---
+title: "Lab 3 - Challenge"
+author: "Caleb Jensen"
+format: html
+editor: visual
+---
+
+## Favorite Artists by Demographic
+
+```{r}
+#| output: FALSE
+library(tidyverse)
+library(here)
+library(ggridges)
+```
+
+```{r}
+#| output: FALSE
+hiphop <- read.csv(here::here("supporting_artifacts", "Lab 3", "hiphop.csv"))
+```
+
+```{r}
+hiphop |> 
+  select(ethnic, sex, age, intl:unclassifiable) |> 
+  group_by(sex) |> 
+  summarise(across(.cols = intl:unclassifiable, .fns = mean)) |> 
+  summarise(across(.cols = intl:unclassifiable, .fns = diff))
+
+hiphop |> 
+  select(ethnic, sex, age, intl:unclassifiable) |>
+  mutate(ethnic_binary = as.factor(if_else(ethnic == "white", "white", "non-white"))) |> 
+  group_by(ethnic_binary) |> 
+  summarise(across(.cols = intl:unclassifiable, .fns = mean)) |> 
+  summarise(across(.cols = intl:unclassifiable, .fns = diff))
+
+```
+
+Turning first to reported differences in men's vs. women's music taste. I looks like men named significantly more rock musicians as well as vocal ones. Women were more likely to name country artists and poop artists but other than rock, vocal, and to some extent country (the numbers were overall small for country) it seems that there was little difference in the music taste of men and women. In the comparison of white vs. non-white participants there were some differences. non-white participants knew far more international artists on average. They could also name more hiphop artists on average, but fewer country artists and far less rock artists outside of those catagories music taste lined up fairly well.
+
+# Possible Issues in Study
+
+It seems that there could be several problems with this study overall. First the sample is almost certainly highly biased. Choosing only participants from the linguistics, sociology, and music classes at a university biases the responses greatly. Participants are more likely to be young, more likely to be well versed in pop-culture and especially in music if they are in music classes. Equally problematic is that linguistics students probably also had previous knowledge of the linguistics expressions in question. By excluding African Americans from those considered in the study it could also bias the study. In short, choosing the sample from only students in certain classes biased the study to be younger people and people who are very likley studying music and linguistics outside of learning naturally by listening to certain styles of music. This makes determining extrapolating from the correlations found, from preferred music genres to vocabulary familiarity, hard to defend.

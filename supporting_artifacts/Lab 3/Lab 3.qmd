@@ -1,0 +1,175 @@
+---
+title: "Lab 3: Hip-Hop Lyrics"
+format: html
+editor: visual
+author: "Caleb Jensen"
+---
+
+## Set-Up
+
+```{r}
+#| output: FALSE
+library(tidyverse)
+library(here)
+library(ggridges)
+```
+
+## The Data
+
+```{r}
+#| output: FALSE
+hiphop <- read.csv(here::here("supporting_artifacts", "Lab 3", "hiphop.csv"))
+dim(hiphop)
+str(hiphop)
+```
+
+## Overview
+
+This data set has 10752 rows or observations, one for each word and each person's response to it (168 \* 64) as well as each individual's demographic data in the column. There is demographic data on age, music they like, gender, ethnicity, population of the places they come from and the people they are close to. Each observation includes data on how familiar with pop and hiphop culture the participant is as well as how well they could define the word in question. This study was conducted among students in linguistics, music and sociology at the University of Minnesota. There were 168 student responses recorded. Their understanding of each word was graded 1-5 with 1 being no understanding and 5 being full, or good understanding. Each row is one student's understanding of 1 word with their 1-5 score as well as various demographic markers for each one.
+
+## What Does Each row represent?
+
+Each row is is the reaction on one person to one word. So for each of the words studied there will be 168 rows or observations, one for each person who participated in the study.
+
+## Missing Values
+
+For many of the variables missing values were replaced with the mean of the variable. This has pros and cons, the big pro is that we don't have to deal with NA ruining any calculations we want to do with our data. The cons are that it could bias or skew our data. If we are applying a mean across all our demographic groups then the mean for one specific person could be misleading given the demographic group they are in. For instance inputting a mean of 7 for number of country artist someone knows or listens to when in reality the truth is 2. Then when we look at their specific demographic group that 7 could cause us to believe something that is not the case.
+
+## Data Cleaning
+
+```{r}
+hiphop <- hiphop |> 
+  mutate(sex = as.factor(sex),
+         ethnic = as.factor(ethnic), 
+         subj = str_replace_all(subj, "p", ""),
+         subj = as.numeric(subj))
+```
+
+## Number of Words Studied
+
+```{r}
+hiphop |> 
+  distinct(word, .keep_all = TRUE) |> 
+  count()
+```
+
+In this data set 64 unique words were studied for understanding by 168 different individuals
+
+## Changing Ethnic to Binary Option
+
+```{r}
+hiphop <- hiphop |> 
+  mutate(ethnic_binary = if_else(ethnic == "white", "white", "non-white"))
+```
+
+# Demographic Data
+
+```{r}
+hiphop |> 
+  select(ethnic) |> 
+  distinct(c(ethnic), .keep_all = TRUE) |> 
+  count()
+
+hiphop |> 
+  select(c(sex, age, ethnic_binary)) |> 
+  mutate(ethnic_binary = as.factor(ethnic_binary)) |> 
+  summary()
+
+hiphop |> 
+  select(c(age, ethnic_binary, sex)) |>
+  mutate(ethnic_binary = as.factor(ethnic_binary)) |> 
+  summarise(mean(age), mean(as.numeric(ethnic_binary) - 1),
+            mean(as.numeric(sex) - 1)) 
+```
+
+In our sample there were 9 distinct ethnic groups identified. This seems like quite a lot of diversity until you uncover that about 80% of the sample was white with the remaining 20% being divided among the other ethnic groups. The sample was very young with the average age being about 20 years old and the median only 19. In fact about 2/3 of the sample were under 20 years old, a demographic much more likely to be up to date on pop culture. Finally about 70% of the study was listed as female, which is a pretty large proportion especially when compared to the population generally.
+
+# Demographics Displayed in Graphs
+
+```{r}
+hiphop |> 
+  distinct(subj, .keep_all = TRUE) |> 
+  ggplot(mapping = aes(x = ethnic, y = age)) + 
+    geom_boxplot(outlier.shape = NA) +
+  coord_flip() + 
+  geom_jitter(alpha = .25) + 
+  labs(y = "Age in Years of Participants", x = "Ethnicity of Participants")
+  
+  
+hiphop |> 
+  ggplot(mapping = aes(x = age, y = sex)) + 
+  geom_density_ridges() +
+  labs(x = "Age of Participants in years", y = "Sex of participants")
+```
+
+# Familiar Words By Demographic
+
+## People Below Age 20
+
+```{r}
+hiphop |>  
+  filter(age < 20) |> 
+  group_by(word) |> 
+  summarise(mean_familiarity = mean(familiarity)) |> 
+  slice_max(order_by = mean_familiarity)
+
+hiphop |>  
+  filter(age < 20) |> 
+  group_by(word) |> 
+  summarise(mean_familiarity = mean(familiarity)) |> 
+  slice_min(order_by = mean_familiarity)
+```
+
+For people below age 20 of any age or sex, "off the hook" was the most understood word with almost universal complete understanding. Out of 5, with 5 being perfect understanding, people under 20 averaged a score of 4.4 for understanding what that phrase meant. Conversely, "Catch the vapors" was almost completely misunderstood with an average understanding score of 1.02, meaning that most young participants had no knowledge of the term.
+
+```{r}
+hiphop |>  
+  filter(sex == "Female", 
+         ethnic != "white") |> 
+  group_by(word) |> 
+  summarise(mean_familiarity = mean(familiarity)) |> 
+  slice_max(order_by = mean_familiarity)
+
+hiphop |>  
+  filter(sex == "Female", 
+         ethnic != "white") |> 
+  group_by(word) |> 
+  summarise(mean_familiarity = mean(familiarity)) |> 
+  slice_min(order_by = mean_familiarity)
+```
+
+Among non-white women of any age, the best understood phrase was "feel me" with an understanding score of nearly 4.2, representing almost universal familiarity. Least understood was a tie with several averages of 1 representing no understanding of the term. "break someone out", "dukey rope", "plex", and "rollie" were all in this frequently misunderstood group.
+
+```{r}
+hiphop |>  
+  filter(sex == "Male", 
+         ethnic == "white", 
+         age >= 30) |> 
+  group_by(word) |> 
+  summarise(mean_familiarity = mean(familiarity)) |> 
+  slice_max(order_by = mean_familiarity)
+
+hiphop |>  
+  filter(sex == "Male", 
+         ethnic == "white", 
+         age >= 30) |> 
+  group_by(word) |> 
+  summarise(mean_familiarity = mean(familiarity)) |> 
+  slice_min(order_by = mean_familiarity)
+```
+
+White men over 30 had very poor understanding of the words in question generally. They almost all understood what 5-0 referred to with an average score of 4.2. That said, there were 25 of the total 68 words that averaged a 1 or no understanding at all. This should be taken with a grain of salt as our demographic data tells us that there were very few men over the age of thirty generally so this conclusion is based on a very small sample size and may not be representative.
+
+# Who Is Justin Bieber
+
+```{r, output = FALSE}
+hiphop |> 
+  filter(age >= 17, 
+         age <= 23, 
+         city >= 10000, 
+         city <= 60000, 
+         sex == "Male") |>
+  arrange(desc(bieber))
+```
+
+Based on these filters for a man between 17 and 23 from a city with a population between 10,000 and 60,000 residents, and a high knowledge of Justin Bieber songs, this researcher believes that participant 17 is in fact Justin Bieber.
