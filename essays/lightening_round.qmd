@@ -1,5 +1,11 @@
 ---
 title: "Lightening Round Essays"
+author: "Caleb Jensen"
 format: html
 editor: visual
 ---
+If Michelle Kairy does not get an A nobody should, Michelle puts in lots of work outside class on labs and preview activities to ensure she understands the topics before we even arrive in class, she faithfully does her homework with a very high standard for herself, is very willing to help her classmates, and has a firm grasp of the class concepts covered to date. 
+The hardest thing we have done in class so far has been regular expressions and working with strings. I had the least experience with this and understanding what the regular expressions referred to as well as where to use which character was not very intuitive for me. It is a very helpful skill to have, but not one that comes naturally to me and took much more effort to grasp. 
+The easiest part has been using pipelines and statements to filter the data. I was familiar with pipelines from previous classes so the concept of take the data and running it through several processes by use of a pipeline came naturally. Additionally, associating statements with a verb that described what I wanted to do such as filter or mutate was very helpful. 
+The most interesting and helpful part of the class so far has been the use of join statements to filter or mutate data sets. I had not encountered that before and being able to join two or more related data sets is very helpful and has lots of applications, including more efficient filters and being able to combine studies for further analysis. 
+I would encourage a stat 331 student to make sure they are going through the preview activities and videos before class so they have an understanding of the material ahead of time. This makes the practice activities so much more helpful as they become exactly that, practice to work on weak spots and explore the concepts instead of a first exposure. It also helps be able to ask intelligent questions that can help with completion of the lab activities later in the week. 
