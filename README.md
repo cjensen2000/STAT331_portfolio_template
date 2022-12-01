@@ -20,6 +20,3 @@ See instructions for creating your final portfolio [here](https://docs.google.co
 
 ### Growth as a Team Member
 
-<<<<<<< HEAD
-This is a line from R-studio
->>>>>>> d57d69fe7929e1d5d3c64c8764460ecabeae8aef
