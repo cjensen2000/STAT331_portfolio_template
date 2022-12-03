@@ -6,4 +6,5 @@ editor: visual
 ---
 
 ## Peer Review Lab 2
+
 Hey Harshini, You're code overall looked really good. It was very efficient putting everything into single ggplot functions and you did a really good job making everything look very neat. I appreciated that you labeled almost all you're arguments and put spaces and line breaks around all your equals and plus signs. One thing I would say to make the code even more efficient is not assigned each ggplot to an object. This meant you had to add an extra line in every code chunk to call that object. This is not terrible, just not super necessary. If you do want to do this maybe naming them each something different just to eliminate confusion and identify them seperately might be a good practice. Overall thought very solid, you were consistent throughout in you're code and it was generally easy to read.
