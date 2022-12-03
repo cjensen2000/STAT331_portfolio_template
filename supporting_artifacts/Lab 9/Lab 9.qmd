@@ -1,0 +1,110 @@
+---
+title: "Lab 9"
+author: "Caleb Jensen"
+format: html
+editor: visual
+---
+
+## Packages & Data
+
+```{r}
+#| output: false
+library(broom)
+library(tidyverse)
+A_names <- read_csv(here::here("supporting_artifacts", "Lab 9", "StateNames_A.csv"))
+```
+
+## Summary and Visualization
+
+```{r}
+Allison <- A_names |> 
+  rename(Sex = Gender) |> 
+  mutate(Count = replace_na(Count, 0)) |> 
+  filter(Name == "Allison") |> 
+  group_by(State, Year) |> 
+  summarise(Count, Sex, .groups = "drop")
+
+Allison <- Allison |> 
+  filter(Sex == "F")
+
+Allison |> 
+  group_by(Year) |> 
+  summarise(Count = sum(Count)) |> 
+  ggplot(mapping = aes(x = Year, y = Count)) +
+  geom_point() + 
+  geom_path() + 
+  labs(x = "", y = "", title = "Number of Babies Names Allison by Year") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+## Modeling The Number of Allisons
+
+```{r}
+ali_mod <- lm(Count ~ Year, data = Allison)
+summary(ali_mod)
+Allison |> 
+  ggplot(mapping = aes(x = Year, y = Count)) +
+    geom_point() + 
+    stat_smooth(method = "lm") + 
+    labs(x = "", y = "", title = "Plot of Allisons vs. Year With Regression Line") +
+    theme(plot.title = element_text(hjust = 0.5))
+```
+
+The estimated regression equation is "Allisons = 3894.36 - 1.882 \* Year" This means the bigger year gets the fewer babies named Allison we expect.
+
+## Residuals in Allison Model
+
+```{r}
+ali_mod |> 
+  ggplot(mapping = aes(x = .resid)) + 
+  geom_density() +
+  labs(x = "", y = "", title = "Density Plot of Residuals Predicting Count with Year") + 
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+From this model we can say that, in general, the name "Allison" has gotten less popular through the years, however, it appears that correlation is not extremely strong and varies from state to state.
+
+## Babies Named "Allen" "Allan" or "Alan"
+
+```{r}
+Al_names <- data.frame(Name = c("Allan", "Alan", "Allen"), Sex = c("M", "M", "M"))
+
+Allans <- A_names |> 
+  rename(Sex = Gender) |> 
+  semi_join(Al_names, by = c("Name", "Sex")) 
+
+Allans |> 
+  group_by(Year, Name) |> 
+  summarise(Count = sum(Count)) |> 
+  ggplot(mapping = aes(x = Year, y = Count, color = Name)) +
+  geom_point() + 
+  geom_path() +
+  labs(x = "", y = "", title = "Count of Allen's by Spelling and Year") + 
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "none") +
+  annotate("text", x = 2010, y = 3000, label = "Alan") +
+  annotate("text", x = 2010, y = 1100, label = "Allen") + 
+  annotate("text", x = 2010, y = 550, label = "Allan") 
+  
+
+```
+
+## Spelling by State
+
+```{r}
+states <- data.frame(State = c("PA", "CA"))
+
+Allans |> 
+  filter(Year == 2000) |> 
+  semi_join(states, by = "State") |> 
+  pivot_wider(names_from = Name, 
+              values_from = Count) |> 
+  group_by(State) |> 
+  mutate(Allan = replace_na(Allan, 0), 
+         Total = sum(Allen, Allan, Alan),
+         Alan = round(Alan/Total, 2),
+         Allen = round(Allen/Total, 2), 
+         Allan = round(Allan /Total, 2))
+  
+```
+
+Unless the filtering was done wrong, all "Allens" born in California from this study were spelled "Allen" but about 18% of Pennsylvania "Allens" were spelled "Allan" making our friend a little less unique in his home state.

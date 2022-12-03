@@ -1,14 +1,18 @@
 ---
 title: "Lab 4 Challenge"
 author: "Caleb Jensen"
-format: html
+format: 
+  html:
+    self-contained: true
 editor: visual
 ---
 
 # Challenge
 
+### 1) Import Data
+
 ```{r}
-#| output: FALSE
+#| output: false
 library(readxl)
 library(tidyverse)
 library(here)
@@ -19,8 +23,12 @@ homes <- read_xls(here("supporting_artifacts", "Lab 4", "Median_CA_home_prices.x
                       n_max = 400)
 ```
 
+Imported the avocado data set as well as home price data for a variety of California cities going back several years.
+
+### 2) Clean Home Data
+
 ```{r}
-#| output: FALSE
+#| output: false
 homes_cleaned <- homes |> 
   select(`San Francisco`, `San Diego`, `Los Angeles`, Sacramento, `Mon-Yr`) |> 
   separate(col = `Mon-Yr`, 
@@ -34,8 +42,14 @@ homes_cleaned <- homes |>
                values_to = "price") |> 
   group_by(year, region) |>
   summarise(price = mean(price),
-            .groups = "keep")
+            .groups = "drop")
 ```
+
+### Process
+
+Here I cleaned home data by creating seperte columns for the year, month, and day of each observation. I then made the year variable numeric and filtered it to match the years represented in the avocado data set. I pivoted the data longer, again to match the avocado data set and summarized the average prices by year and region.
+
+### 3) Plot Avocado Prices and Home Prices
 
 ```{r}
 ca_cities <- data.frame(region = c("LosAngeles", "SanFrancisco", "SanDiego",
@@ -58,5 +72,11 @@ avocados |>
        color = "City") + 
   theme(plot.title = element_text(hjust = .5))
 ```
+
+### Process
+
+I created a data frame with the cities I wanted to study to use to filter the avocados data set, I then mutated the region variable to match the homes data and make the left join simpler. After doing this I grouped the data into year and region groups and joined it with the homes data, which was grouped with the same variables. Finally I used this to create a point plot showing the relationship between average home price and avocado prices in each city
+
+### Conclusion
 
 It appears that there is some relationship between avocado price and home price. If we look at groups by city, as avocado prices in a city increase so do their home prices. However, the data deserves further investigation and the answer is somewhat convoluted. For instance, San Francisco has famously astronomical home prices which is shown in the data, at the same time they have avocado prices only slightly higher than Sacramento which has the lowest home prices by a significant margin. All that to say while there may be a relationship between avocado prices and home prices it is merely a correlation, not a causation.

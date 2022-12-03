@@ -1,0 +1,52 @@
+---
+title: "Lab 6 - Challenge"
+author: "Caleb Jensen"
+format: 
+  html: 
+    self-contained: true
+editor: visual
+---
+
+```{r}
+#| output: false
+library(tidyverse)
+library(ggplot2)
+fish <- read_csv(here::here("supporting_artifacts", "Lab 6", "BlackfootFish.csv"))
+```
+
+```{r}
+reasonable_value <- function(values, upper, lower){
+  stopifnot(is.numeric(values), 
+            is.numeric(upper), 
+            is.numeric(lower))
+  
+  ifelse(values > upper | values < lower, NA, values) 
+}
+
+
+fish <- fish |> 
+  mutate(length = reasonable_value(length, 375, 150), 
+         weight = reasonable_value(weight, 425, 135))
+fish
+```
+
+```{r}
+condition_index <- function(length, weight){
+  stopifnot(is.numeric(length), 
+            is.numeric(weight))
+  cond_ind <- (weight/(length^3)) * 100
+  return(cond_ind)
+}
+
+fish |> 
+  mutate(cond_ind = condition_index(length = length, weight = weight), 
+         trip = if_else(trip == 1, "Trip 1", "Trip 2"), 
+         trip = as.factor(trip), 
+         section = if_else(section == "ScottyBrown", "Scotty Brown", "Johnsrud")) |> 
+  ggplot(mapping = aes(x = section, y = cond_ind)) + 
+    geom_boxplot() +
+    facet_wrap(~trip) + 
+    coord_flip() + 
+  labs(y = "Condition Index", 
+       x = "River Section")
+```

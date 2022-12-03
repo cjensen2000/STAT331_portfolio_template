@@ -1,0 +1,87 @@
+---
+title: "Lab 6"
+author: "Caleb Jensen"
+format: 
+  html:
+    self-contained: true
+editor: visual
+---
+
+## 1) Packages and Data
+
+```{r}
+#| output: false
+library(tidyverse)
+library(ggplot2)
+fish <- read_csv(here::here("supporting_artifacts", "Lab 6", "BlackfootFish.csv"))
+```
+
+## 2)
+
+```{r}
+fish |> 
+  summarise(across(.cols = everything(), .fns =~sum(is.na(.))))
+  
+```
+
+## 3)
+
+```{r}
+fish |> 
+  mutate(trip = if_else(
+            trip == 1, "Trip 1", "Trip 2"),
+         section = if_else(
+           section == "ScottyBrown", "Scotty Brown", "Johnsrud")) |> 
+  group_by(year, section, trip) |> 
+  summarise(missing = sum(is.na(weight)), .groups = "keep") |> 
+  ggplot(mapping = aes(x = year, y = missing, fill = section)) + 
+    geom_col() + 
+    labs(x = " Year", y = "Number of Weights Missing", fill = "River Section") +
+    facet_wrap(.~trip, nrow = 1) 
+```
+
+## 4)
+
+```{r}
+rescale_01 <- function(vec){
+  stopifnot(is.numeric(vec), 
+            length(vec) > 1)
+  range = range(vec, na.rm = TRUE)
+  num = vec - range[1]
+  denom = range[2] - range[1]
+  return(num/denom)
+}
+
+fish |> 
+  mutate(length = rescale_01(length))
+
+vec <- c(1:25, NA)
+rescale_01(vec)
+```
+
+## 5)
+
+```{r}
+fish |> 
+  mutate(rescaled_length = rescale_01(length)) |> 
+  pivot_longer(cols = c(length, rescaled_length), 
+               names_to = "length_type", 
+               values_to = "length") |> 
+  mutate(length_type = if_else(length_type == "rescaled_length", "Rescaled Length",
+                               "Full Length")) |> 
+  ggplot(mapping = aes(x = length)) +
+  geom_boxplot() +
+  facet_wrap(~length_type, nrow = 1) 
+```
+
+## 6)
+
+```{r}
+rescale_column <- function(data, variables){
+  data |> 
+    mutate(across(.cols = {{ variables }}, .fns = rescale_01))
+}
+
+fish |> 
+  rescale_column(c(length, weight))
+```

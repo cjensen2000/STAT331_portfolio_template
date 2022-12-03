@@ -1,14 +1,16 @@
 ---
 title: "Lab 4"
 author: "Caleb Jensen"
-format: html
+format: 
+  html: 
+    self-contained: true
 editor: visual
 ---
 
 # Packages and Data
 
 ```{r}
-#| output: FALSE
+#| output: false
 library(tidyverse)
 library(here)
 avocados <- read_csv(here("supporting_artifacts", "Lab 4", "avocado.csv"))
@@ -47,7 +49,7 @@ avocados_region |>
 
 It would appear that the West region sold the most small, organic avocados overall in 2017
 
-## Question 4
+## Question 4)
 
 ```{r}
 avocados |> 
@@ -62,16 +64,15 @@ avocados |>
 
 Our analysis says that February (the second month) had the highest avocado sales of any month.
 
-## Question 5
+## Question 5)
 
 ```{r}
-avocados_metropolitan |> 
+big_metro <- avocados_metropolitan |> 
   filter(region != "TotalUS") |> 
   group_by(region) |> 
-  summarise(total_volume = sum(`Total Volume`), .groups = "keep") |> 
-  arrange(desc(total_volume)) 
-
-big_metro <- data.frame(region = c("LosAngeles", "DallasFtWorth", "Houston", "PhoenixTuscon", "Denver"))
+  summarise(total_volume = sum(`Total Volume`), .groups = "drop") |> 
+  slice_max(order_by = total_volume, n = 5)
+big_metro
 
 avocados_metropolitan |>
   semi_join(big_metro, by = "region") |> 
@@ -81,7 +82,7 @@ avocados_metropolitan |>
 
 Dallas, Denver, Pheonix, Houston and Los Angeles were the metro areas with the highest avocado consumption.
 
-## Question 6
+## Question 6)
 
 ```{r}
 ca_cities <- data.frame(region = c("LosAngeles", "SanFrancisco", "SanDiego", "Sacramento"))
@@ -103,7 +104,7 @@ avocados_metropolitan |>
               values_from = avg_price_type) |> 
   mutate(difference = organic - conventional) |> 
   ggplot(mapping = aes(y = difference, x = region, fill = region)) +
-  geom_col() + 
+  geom_point() + 
   annotate("text", x = 1, y = .55, label = "Los Angeles") + 
   annotate("text", x = 2, y = .75, label = "Sacramento") +
   annotate("text", x = 3, y = .75, label = "San Diego") + 
@@ -115,7 +116,7 @@ avocados_metropolitan |>
 
 The city with the Largest difference in price between organic and conventional avocados was San Francisco. The average difference between the price of organic avocados as compared to organic was over \$.80
 
-## Question 7
+## Question 7)
 
 ```{r}
 avocados_metropolitan |> 

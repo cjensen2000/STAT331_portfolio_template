@@ -1,0 +1,139 @@
+---
+title: "Lab 5"
+author: "Caleb Jensen"
+format: 
+  html:
+    self-contained: true
+editor: visual
+---
+
+
+## 1) Packages Used
+
+
+```{r}
+#| output: false
+library(here)
+library(tidyverse)
+library(forcats)
+library(lubridate)
+```
+
+
+## 2) Data From Lab 2
+
+
+```{r}
+#| output: false 
+surveys <- read_csv(here::here("supporting_artifacts", "Lab 5", "surveys.csv"))
+```
+
+
+## 3) Plot from Lab 2
+
+
+```{r}
+ggplot(data = surveys, mapping = aes(x = weight, y = species)) +
+  geom_jitter(alpha = .05, color = "blue") +
+   geom_boxplot() 
+   
+```
+
+
+## 4) Re-odered Plot From Lab 2
+
+
+```{r}
+surveys |> 
+  ggplot(
+       mapping = aes(x = weight, y = fct_reorder(species, -weight, na.rm = TRUE))) +
+  geom_jitter(alpha = .05, color = "blue") + 
+  geom_boxplot() +
+  labs(title = "Species Arranged by Descending Weight", y = "") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+## 5) Line Chart Showing Mean Weight by Year, Colored by Genus
+
+
+```{r}
+surveys |> 
+  group_by(year, genus) |> 
+  summarise(weight = mean(weight), .groups = "keep") |> 
+  ggplot(mapping = aes(x = year, y = weight, color = genus)) +
+    geom_point() + 
+    geom_line()
+```
+
+
+## 6) Similar Line Chart, Colors' Legend Arranged by Descending Weight
+
+
+```{r}
+surveys |> 
+  group_by(year, genus) |> 
+  summarise(weight = mean(weight), .groups = "keep") |> 
+  ggplot(mapping = aes(x = year, y = weight, 
+                       color = fct_reorder(genus, -weight, na.rm = TRUE))) +
+  geom_point() +
+  geom_line() +
+  labs(color = "Genus")
+```
+
+
+## 7) Cleaned Up Line Chart
+
+
+```{r}
+surveys |> 
+  group_by(year, genus) |> 
+  summarise(weight = mean(weight), .groups = "keep") |> 
+  ggplot(mapping = aes(x = year, y = weight, 
+                       color = fct_reorder(genus, -weight, na.rm = TRUE))) +
+  geom_point() +
+  geom_line() +
+  labs(color = "", title = "Mean Weight by Year, Colored by Genus", y = "Weight", x = "Year") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+## 8) Original Bar Chart Showing Rodents Caught by Weekday
+
+
+```{r}
+surveys |> 
+  mutate(weekday = as.factor(wday(date, label = TRUE))) |> 
+  ggplot() +
+  geom_bar(mapping = aes(x = weekday))
+```
+
+
+## 9) Bar Chart with Weekday Properly Ordered
+
+
+```{r}
+surveys |> 
+  mutate(weekday = as.factor(wday(date, label = TRUE)),
+         weekday = fct_shift(weekday, 1L)) |> 
+  ggplot() +
+  geom_bar(mapping = aes(x = weekday))
+```
+
+
+## 10) Bar Chart With Weekday Collapsed to Weekdays and Weekends
+
+
+```{r}
+surveys |> 
+  filter(!is.na(date)) |> 
+  mutate(week_day = wday(date, label = TRUE),
+         week_day = as.factor(week_day),
+         week_day = fct_shift(week_day, 1L), 
+         week_day = fct_collapse(week_day, 
+                                weekday = c("Mon", "Tue", "Wed", "Thu", "Fri"),
+                                weekend = c("Sat", "Sun"))) |> 
+  ggplot() +
+  geom_bar(mapping = aes(x = week_day))
+```
+

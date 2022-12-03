@@ -1,11 +1,15 @@
 ---
 title: "Lab 3 - Challenge"
 author: "Caleb Jensen"
-format: html
+format: 
+  html: 
+    self-contained: true
 editor: visual
 ---
 
 ## Favorite Artists by Demographic
+
+## 1)
 
 ```{r}
 #| output: FALSE
@@ -14,10 +18,14 @@ library(here)
 library(ggridges)
 ```
 
+## 2)
+
 ```{r}
 #| output: FALSE
 hiphop <- read.csv(here::here("supporting_artifacts", "Lab 3", "hiphop.csv"))
 ```
+
+## 3)
 
 ```{r}
 hiphop |> 
