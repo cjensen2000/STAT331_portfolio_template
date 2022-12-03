@@ -1,0 +1,139 @@
+---
+title: "Lab 4"
+author: "Caleb Jensen"
+format: 
+  html: 
+    self-contained: true
+editor: visual
+---
+
+# Packages and Data
+
+```{r}
+#| output: false
+library(tidyverse)
+library(here)
+avocados <- read_csv(here("supporting_artifacts", "Lab 4", "avocado.csv"))
+```
+
+The data set contains 18,249 observations of 14 variables. There are variables on if the avocados sold were organic or not, the region they were sold in, the year, how many of each type of bag was sold (small, large or XL), the number of each product look-up code sold, the average price per avocado and the date.
+
+# Data Cleaning
+
+```{r}
+#| output: FALSE
+region <- data.frame(region = c("GreatLakes", "Midsouth", "Northeast", "NorthernNewEngland", "Plains", "SouthCentral", "Southeast", "West", "WestTexNewMexico"))
+
+state <- data.frame(region = c("California", "SouthCarolina", "NewYork"))
+
+avocados_metropolitan <- avocados |> 
+  anti_join(region, by = "region") |> 
+  anti_join(state, by = "region") 
+
+avocados_state <- avocados |> 
+  semi_join(state, by = "region")
+
+avocados_region <- avocados |> 
+  semi_join(region, by = "region")
+```
+
+## Question 3
+
+```{r}
+avocados_region |> 
+  filter(type == "organic", year == 2017) |> 
+  group_by(region) |> 
+  summarise(total_small = sum(`4046`)) |> 
+  slice_max(total_small)
+```
+
+It would appear that the West region sold the most small, organic avocados overall in 2017
+
+## Question 4)
+
+```{r}
+avocados |> 
+  separate(col = Date, 
+           into = c("year_not", "month", "day"), 
+           sep = "-") |> 
+  select(-year_not) |> 
+  group_by(month) |> 
+  summarise(total_volume = sum(`Total Volume`)) |> 
+  slice_max(total_volume)
+```
+
+Our analysis says that February (the second month) had the highest avocado sales of any month.
+
+## Question 5)
+
+```{r}
+big_metro <- avocados_metropolitan |> 
+  filter(region != "TotalUS") |> 
+  group_by(region) |> 
+  summarise(total_volume = sum(`Total Volume`), .groups = "drop") |> 
+  slice_max(order_by = total_volume, n = 5)
+big_metro
+
+avocados_metropolitan |>
+  semi_join(big_metro, by = "region") |> 
+  ggplot(mapping = aes(x = `Total Volume`, y = region)) +
+  geom_boxplot()
+```
+
+Dallas, Denver, Pheonix, Houston and Los Angeles were the metro areas with the highest avocado consumption.
+
+## Question 6)
+
+```{r}
+ca_cities <- data.frame(region = c("LosAngeles", "SanFrancisco", "SanDiego", "Sacramento"))
+
+avocados_metropolitan |> 
+  semi_join(ca_cities, by = "region") |> 
+  group_by(region, type) |> 
+  summarise(avg_price_type = mean(AveragePrice), .groups = "keep") |> 
+  pivot_wider(names_from = type,
+              values_from = avg_price_type) |> 
+  mutate(difference = organic - conventional) |> 
+  arrange(desc(difference))
+
+avocados_metropolitan |> 
+  semi_join(ca_cities, by = "region") |> 
+  group_by(region, type) |> 
+  summarise(avg_price_type = mean(AveragePrice), .groups = "keep") |> 
+  pivot_wider(names_from = type,
+              values_from = avg_price_type) |> 
+  mutate(difference = organic - conventional) |> 
+  ggplot(mapping = aes(y = difference, x = region, fill = region)) +
+  geom_point() + 
+  annotate("text", x = 1, y = .55, label = "Los Angeles") + 
+  annotate("text", x = 2, y = .75, label = "Sacramento") +
+  annotate("text", x = 3, y = .75, label = "San Diego") + 
+  annotate("text", x = 4, y = .85, label = "San Francisco") +
+  theme(legend.position = "none") + 
+  labs(y = "Difference Between Conventional & Organic Avocado Price", 
+       x = "California City") 
+```
+
+The city with the Largest difference in price between organic and conventional avocados was San Francisco. The average difference between the price of organic avocados as compared to organic was over \$.80
+
+## Question 7)
+
+```{r}
+avocados_metropolitan |> 
+  semi_join(ca_cities, by = "region") |> 
+  group_by(region, type) |> 
+  summarise(avg_volume = mean(`4046` + `4225` + `4770`), small = mean(`4046`), 
+            large = mean(`4225`), xlarge = mean(`4770`),
+            .groups = "keep") |> 
+  pivot_longer(cols = c(small, large, xlarge), 
+               names_to = "size", 
+               values_to = "volume") |> 
+  mutate(proportion = volume/avg_volume) |>
+    ggplot(mapping = aes(x = region, y = proportion, fill = size)) +
+  geom_col() + 
+  facet_grid(. ~type) + 
+  theme(axis.text.x = element_text(vjust = grid::unit(c(-3, -1, -3, -1), "points"))) +
+  labs(y = "Proportion of Mean Avocados Sold", x = "Region of CA", fill = "Avocado Size")
+```
+
+I used help from google for this question. I am not sure how to cite it so I'll put the link here. Basically I was not happy with how my labels looked and wanted to stagger them as in the example. To that end I did some searching on online and came up with the line "theme(axis.text.x = element_text(vjust = grid::unit(c(-3, -1, -3, -1),"points")))" in several places. I customized it to fit my specific situation by changing the grid vector.
